@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ShieldCheck, Compass, ArrowDownRight, Sparkles, AlertTriangle } from "lucide-react";
 import heroKayakImg from "../assets/images/hero_whitewater_kayak_1792152930540.jpg";
+import { WaveLine } from "./WaveLine";
 
 interface HeroProps {
   onOpenQuiz: () => void;
@@ -18,7 +19,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuiz, onExploreMap, onExploreS
       <div className="absolute inset-0 contour-lines opacity-70 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,oklch(0.5_0.06_155/0.08),transparent)] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 lg:pt-16 lg:pb-20 relative">
+      {/* Main Hero Split: Heading & Copy (Left) + Hero Kayak Photo (Right) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8 lg:pt-16 lg:pb-10 relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           {/* Left Column: Heading, Value Prop, CTA */}
           <div className="lg:col-span-7 flex flex-col justify-center">
@@ -126,9 +128,21 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuiz, onExploreMap, onExploreS
             </div>
           </div>
         </div>
+      </div>
 
-        {/* 4-Column KPI / Quick Strip below the hero split */}
-        <div className="mt-14 pt-8 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* Full-width wave line directly beneath the photo across the entire screen width */}
+      <div className="w-full relative overflow-hidden select-none my-2" aria-hidden="true">
+        <WaveLine
+          fillColor="#0050c8"
+          strokeWidth={2.5}
+          height={108}
+          className="w-full"
+        />
+      </div>
+
+      {/* 4-Column KPI / Quick Strip below the hero wave line */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 lg:pb-16 relative">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="space-y-1">
             <div className="text-2xl font-bold text-foreground font-mono tabular-nums">
               Class I〜VI
