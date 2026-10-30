@@ -1,0 +1,6 @@
+{
+  "name": "RAPID PULSE - ホワイトウォーターカヤック総合ポータル",
+  "description": "激流を漕ぐための専門ポータル。初心者向けボート・ギア選び、全国リバー難易度マップ、安全講習＆レスキューマニュアル、カヤック用語事典。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
