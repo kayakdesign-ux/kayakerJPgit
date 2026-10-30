@@ -135,7 +135,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuiz, onExploreMap, onExploreS
         <WaveLine
           fillColor="#0050c8"
           strokeWidth={2.5}
-          height={108}
+          height={74}
           className="w-full"
         />
       </div>
