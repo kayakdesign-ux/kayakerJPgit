@@ -53,10 +53,12 @@ if (fs.existsSync(assetsDir) && fs.existsSync(htmlPath)) {
 
 // 2. Ensure Cloudflare Pages _redirects and _headers exist in dist
 const redirectsPath = path.join(distDir, "_redirects");
-if (!fs.existsSync(redirectsPath)) {
-  fs.writeFileSync(redirectsPath, "/*    /index.html   200\n", "utf-8");
-  console.log("[postbuild] Created dist/_redirects for SPA routing");
-}
+fs.writeFileSync(redirectsPath, "/* /index.html 200\n", "utf-8");
+console.log("[postbuild] Wrote dist/_redirects: /* /index.html 200");
+
+// Also create 200.html (Cloudflare Pages native SPA rewrite fallback)
+const fallback200Path = path.join(distDir, "200.html");
+fs.copyFileSync(htmlPath, fallback200Path);
 
 const headersPath = path.join(distDir, "_headers");
 const headersContent = `/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n`;
@@ -69,6 +71,7 @@ if (!fs.existsSync(clientDir)) {
 }
 
 fs.copyFileSync(htmlPath, path.join(clientDir, "index.html"));
+fs.copyFileSync(fallback200Path, path.join(clientDir, "200.html"));
 fs.copyFileSync(redirectsPath, path.join(clientDir, "_redirects"));
 fs.copyFileSync(headersPath, path.join(clientDir, "_headers"));
 
