@@ -93,4 +93,17 @@ if (fs.existsSync(distPkg)) {
   } catch {}
 }
 
+// 5. Ensure Cloudflare Workers wrangler.json has not_found_handling: "single-page-application"
+const wranglerPath = path.join(distDir, "server", "wrangler.json");
+if (fs.existsSync(wranglerPath)) {
+  try {
+    const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf-8"));
+    if (wranglerConfig.assets) {
+      wranglerConfig.assets.not_found_handling = "single-page-application";
+      fs.writeFileSync(wranglerPath, JSON.stringify(wranglerConfig, null, 2), "utf-8");
+      console.log("[postbuild] Configured wrangler.json assets.not_found_handling: 'single-page-application'");
+    }
+  } catch {}
+}
+
 console.log("[postbuild] Build verification complete.");
