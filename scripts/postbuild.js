@@ -51,20 +51,25 @@ if (fs.existsSync(assetsDir) && fs.existsSync(htmlPath)) {
   }
 }
 
-// 2. Ensure Cloudflare Pages _redirects and _headers exist in dist
-const redirectsPath = path.join(distDir, "_redirects");
-fs.writeFileSync(redirectsPath, "/* /index.html 200\n", "utf-8");
-console.log("[postbuild] Wrote dist/_redirects: /* /index.html 200");
+// 2. Completely remove any _redirects file to prevent Cloudflare error [code: 100324]
+const distRedirects = path.join(distDir, "_redirects");
+if (fs.existsSync(distRedirects)) {
+  fs.unlinkSync(distRedirects);
+  console.log("[postbuild] Removed dist/_redirects");
+}
 
-// Also create 200.html (Cloudflare Pages native SPA rewrite fallback)
+// Ensure 200.html exists as SPA fallback
 const fallback200Path = path.join(distDir, "200.html");
-fs.copyFileSync(htmlPath, fallback200Path);
+if (fs.existsSync(htmlPath)) {
+  fs.copyFileSync(htmlPath, fallback200Path);
+}
 
+// Ensure Cloudflare _headers exists
 const headersPath = path.join(distDir, "_headers");
 const headersContent = `/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n`;
 fs.writeFileSync(headersPath, headersContent, "utf-8");
 
-// 3. Mirror to dist/client for Cloudflare Pages projects configured with output dir 'dist/client'
+// 3. Mirror to dist/client for Cloudflare projects configured with output dir 'dist/client'
 const clientDir = path.join(distDir, "client");
 if (!fs.existsSync(clientDir)) {
   fs.mkdirSync(clientDir, { recursive: true });
@@ -72,14 +77,19 @@ if (!fs.existsSync(clientDir)) {
 
 fs.copyFileSync(htmlPath, path.join(clientDir, "index.html"));
 fs.copyFileSync(fallback200Path, path.join(clientDir, "200.html"));
-fs.copyFileSync(redirectsPath, path.join(clientDir, "_redirects"));
 fs.copyFileSync(headersPath, path.join(clientDir, "_headers"));
+
+// Remove client/_redirects if present
+const clientRedirects = path.join(clientDir, "_redirects");
+if (fs.existsSync(clientRedirects)) {
+  fs.unlinkSync(clientRedirects);
+}
 
 const clientAssetsDir = path.join(clientDir, "assets");
 if (fs.existsSync(assetsDir)) {
   fs.cpSync(assetsDir, clientAssetsDir, { recursive: true, force: true });
 }
-console.log("[postbuild] Mirrored dist assets into dist/client for Cloudflare Pages compatibility");
+console.log("[postbuild] Mirrored dist assets into dist/client for Cloudflare compatibility");
 
 // 4. Ensure dist/package.json has "type": "module" if present
 const distPkg = path.join(distDir, "package.json");
