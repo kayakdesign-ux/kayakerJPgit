@@ -31,14 +31,41 @@ import {
   AffiliatePlatform,
 } from "@/types/affiliate";
 
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      if (typeof window !== "undefined" && typeof window.localStorage !== "undefined") {
+        return window.localStorage.getItem(key);
+      }
+    } catch {}
+    return null;
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      if (typeof window !== "undefined" && typeof window.localStorage !== "undefined") {
+        window.localStorage.setItem(key, value);
+      }
+    } catch {}
+  },
+  removeItem: (key: string): void => {
+    try {
+      if (typeof window !== "undefined" && typeof window.localStorage !== "undefined") {
+        window.localStorage.removeItem(key);
+      }
+    } catch {}
+  },
+};
+
 export default function App() {
   // River spots state with persistence
   const [rivers, setRivers] = useState<RiverSpot[]>(() => {
     try {
-      const saved = localStorage.getItem("rapidpulse_user_rivers");
+      const saved = safeLocalStorage.getItem("rapidpulse_user_rivers");
       if (saved) {
         const userAdded: RiverSpot[] = JSON.parse(saved);
-        return [...userAdded, ...INITIAL_RIVER_SPOTS];
+        if (Array.isArray(userAdded)) {
+          return [...userAdded, ...INITIAL_RIVER_SPOTS];
+        }
       }
     } catch (e) {
       console.error(e);
@@ -49,10 +76,12 @@ export default function App() {
   // Glossary terms state with persistence
   const [terms, setTerms] = useState<GlossaryTerm[]>(() => {
     try {
-      const saved = localStorage.getItem("rapidpulse_user_terms");
+      const saved = safeLocalStorage.getItem("rapidpulse_user_terms");
       if (saved) {
         const userAdded: GlossaryTerm[] = JSON.parse(saved);
-        return [...userAdded, ...INITIAL_GLOSSARY_TERMS];
+        if (Array.isArray(userAdded)) {
+          return [...userAdded, ...INITIAL_GLOSSARY_TERMS];
+        }
       }
     } catch (e) {
       console.error(e);
@@ -63,8 +92,13 @@ export default function App() {
   // Affiliate Config state with persistence
   const [affiliateConfig, setAffiliateConfig] = useState<AffiliateGlobalConfig>(() => {
     try {
-      const saved = localStorage.getItem("rapidpulse_affiliate_config");
-      if (saved) return JSON.parse(saved);
+      const saved = safeLocalStorage.getItem("rapidpulse_affiliate_config");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") {
+          return { ...DEFAULT_AFFILIATE_CONFIG, ...parsed };
+        }
+      }
     } catch (e) {
       console.error(e);
     }
@@ -74,8 +108,11 @@ export default function App() {
   // Affiliate Product Links with persistence
   const [affiliateProducts, setAffiliateProducts] = useState<AffiliateProductLink[]>(() => {
     try {
-      const saved = localStorage.getItem("rapidpulse_affiliate_products");
-      if (saved) return JSON.parse(saved);
+      const saved = safeLocalStorage.getItem("rapidpulse_affiliate_products");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
     } catch (e) {
       console.error(e);
     }
@@ -85,8 +122,11 @@ export default function App() {
   // Affiliate Click Tracker logs with persistence
   const [affiliateClicks, setAffiliateClicks] = useState<AffiliateClickRecord[]>(() => {
     try {
-      const saved = localStorage.getItem("rapidpulse_affiliate_clicks");
-      if (saved) return JSON.parse(saved);
+      const saved = safeLocalStorage.getItem("rapidpulse_affiliate_clicks");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
     } catch (e) {
       console.error(e);
     }
@@ -96,8 +136,13 @@ export default function App() {
   // Sponsor section (corporate links & affiliate slots) with persistence
   const [sponsorData, setSponsorData] = useState<SponsorData>(() => {
     try {
-      const saved = localStorage.getItem(SPONSOR_STORAGE_KEY);
-      if (saved) return { ...DEFAULT_SPONSOR_DATA, ...JSON.parse(saved) };
+      const saved = safeLocalStorage.getItem(SPONSOR_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") {
+          return { ...DEFAULT_SPONSOR_DATA, ...parsed };
+        }
+      }
     } catch (e) {
       console.error(e);
     }
@@ -116,11 +161,7 @@ export default function App() {
   // Save sponsor data handler
   const handleSaveSponsorData = (data: SponsorData) => {
     setSponsorData(data);
-    try {
-      localStorage.setItem(SPONSOR_STORAGE_KEY, JSON.stringify(data));
-    } catch (e) {
-      console.error(e);
-    }
+    safeLocalStorage.setItem(SPONSOR_STORAGE_KEY, JSON.stringify(data));
   };
 
   // Track affiliate link clicks
@@ -141,11 +182,7 @@ export default function App() {
 
     setAffiliateClicks((prev) => {
       const updated = [newRecord, ...prev];
-      try {
-        localStorage.setItem("rapidpulse_affiliate_clicks", JSON.stringify(updated.slice(0, 100)));
-      } catch (e) {
-        console.error(e);
-      }
+      safeLocalStorage.setItem("rapidpulse_affiliate_clicks", JSON.stringify(updated.slice(0, 100)));
       return updated;
     });
   };
@@ -153,43 +190,27 @@ export default function App() {
   // Save Config handler
   const handleSaveAffiliateConfig = (cfg: AffiliateGlobalConfig) => {
     setAffiliateConfig(cfg);
-    try {
-      localStorage.setItem("rapidpulse_affiliate_config", JSON.stringify(cfg));
-    } catch (e) {
-      console.error(e);
-    }
+    safeLocalStorage.setItem("rapidpulse_affiliate_config", JSON.stringify(cfg));
   };
 
   // Save Products handler
   const handleSaveAffiliateProducts = (prods: AffiliateProductLink[]) => {
     setAffiliateProducts(prods);
-    try {
-      localStorage.setItem("rapidpulse_affiliate_products", JSON.stringify(prods));
-    } catch (e) {
-      console.error(e);
-    }
+    safeLocalStorage.setItem("rapidpulse_affiliate_products", JSON.stringify(prods));
   };
 
   // Clear clicks handler
   const handleClearClicks = () => {
     setAffiliateClicks([]);
-    try {
-      localStorage.removeItem("rapidpulse_affiliate_clicks");
-    } catch (e) {
-      console.error(e);
-    }
+    safeLocalStorage.removeItem("rapidpulse_affiliate_clicks");
   };
 
   // Add new term handler
   const handleAddTerm = (newTerm: GlossaryTerm) => {
     setTerms((prev) => {
       const updated = [newTerm, ...prev];
-      try {
-        const userAdded = updated.filter((t) => t.isUserAdded);
-        localStorage.setItem("rapidpulse_user_terms", JSON.stringify(userAdded));
-      } catch (e) {
-        console.error(e);
-      }
+      const userAdded = updated.filter((t) => t?.isUserAdded);
+      safeLocalStorage.setItem("rapidpulse_user_terms", JSON.stringify(userAdded));
       return updated;
     });
   };
@@ -198,12 +219,8 @@ export default function App() {
   const handleAddRiver = (newSpot: RiverSpot) => {
     setRivers((prev) => {
       const updated = [newSpot, ...prev];
-      try {
-        const userAdded = updated.filter((r) => r.isUserAdded);
-        localStorage.setItem("rapidpulse_user_rivers", JSON.stringify(userAdded));
-      } catch (e) {
-        console.error(e);
-      }
+      const userAdded = updated.filter((r) => r?.isUserAdded);
+      safeLocalStorage.setItem("rapidpulse_user_rivers", JSON.stringify(userAdded));
       return updated;
     });
   };

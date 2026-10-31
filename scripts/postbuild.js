@@ -33,6 +33,8 @@ if (fs.existsSync(assetsDir) && fs.existsSync(htmlPath)) {
     if (cssFile) {
       assetTags += `<link rel="stylesheet" href="/assets/${cssFile}">\n    `;
     }
+    // Inject $_TSR fallback before module script to prevent "Cannot set properties of undefined (setting 't')"
+    assetTags += `<script>window.$_TSR=window.$_TSR||{t:new Map(),buffer:[],initialized:false,router:{manifest:{},matches:[],dehydratedData:null}};</script>\n    `;
     if (jsFile) {
       assetTags += `<script type="module" src="/assets/${jsFile}"></script>`;
     }
@@ -43,7 +45,14 @@ if (fs.existsSync(assetsDir) && fs.existsSync(htmlPath)) {
       if (existingCssRegex.test(html)) {
         html = html.replace(existingCssRegex, cssFile ? `<link rel="stylesheet" href="/assets/${cssFile}">` : "");
       }
-      html = html.replace(existingBundleScriptRegex, jsFile ? `<script type="module" src="/assets/${jsFile}"></script>` : "");
+      if (!html.includes("window.$_TSR")) {
+        html = html.replace(
+          existingBundleScriptRegex,
+          `<script>window.$_TSR=window.$_TSR||{t:new Map(),buffer:[],initialized:false,router:{manifest:{},matches:[],dehydratedData:null}};</script>\n    <script type="module" src="/assets/${jsFile}"></script>`
+        );
+      } else {
+        html = html.replace(existingBundleScriptRegex, jsFile ? `<script type="module" src="/assets/${jsFile}"></script>` : "");
+      }
     }
 
     fs.writeFileSync(htmlPath, html, "utf-8");
