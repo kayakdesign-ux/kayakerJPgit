@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const KayakApp = lazy(() => import("@/components/KayakApp"));
 
@@ -27,8 +28,10 @@ function Index() {
   useEffect(() => setMounted(true), []);
   if (!mounted) return <div className="min-h-screen" />;
   return (
-    <Suspense fallback={<div className="min-h-screen" />}>
-      <KayakApp />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <KayakApp />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
